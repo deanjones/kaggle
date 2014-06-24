@@ -1,6 +1,6 @@
 !obj:pylearn2.train.Train {
  dataset: !obj:pylearn2.datasets.csv_dataset.CSVDataset &train {
-  path: '/home/dean/kaggle/forest_cover/train_dataset.csv',
+  path: '/home/dean/git/kaggle/forest_cover/train_dataset.csv',
   one_hot: 1
  },
  model: !obj:pylearn2.models.softmax_regression.SoftmaxRegression {
@@ -16,7 +16,7 @@
   monitoring_dataset: {
    'train': *train,
    'valid': !obj:pylearn2.datasets.csv_dataset.CSVDataset {
-     path: '/home/dean/kaggle/forest_cover/valid_dataset.csv',
+     path: '/home/dean/git/kaggle/forest_cover/valid_dataset.csv',
      one_hot: 1
    }
   },
