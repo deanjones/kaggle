@@ -15,7 +15,7 @@
     irange: 1.0
    }
   ],
-  nvis: 57
+  nvis: 105
  },
  algorithm : !obj:pylearn2.training_algorithms.bgd.BGD {
   batch_size: 10000,

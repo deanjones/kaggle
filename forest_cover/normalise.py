@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 from sklearn import preprocessing
 
-raw_data = pd.DataFrame.from_csv('train.csv')
+raw_data = pd.DataFrame.from_csv('test.csv')
 
 # re-scale the elevation to range -1..1
 elev_float = raw_data['Elevation'].values.astype(np.float64)
@@ -49,7 +49,7 @@ hillshade_3pm_float = raw_data.Hillshade_3pm.values.astype(np.float64)
 scaled_hillshade_3pm = preprocessing.scale(hillshade_noon_float)
 
 # assemble into a data frame
-scaled_data = pd.DataFrame({'Cover_Type': raw_data.Cover_Type,
+scaled_data = pd.DataFrame({
                             'Elevation' : scaled_elevation,
                             'Northern_Aspect' : northern_aspect,
                             'Eastern_Aspect' : eastern_aspect,
@@ -70,6 +70,4 @@ soil_cols.extend(wilderness_cols)
 missing_data = pd.DataFrame(raw_data, columns=soil_cols)
 
 all_data = scaled_data.merge(missing_data, how='inner', left_index=True, right_index=True)
-all_data.to_csv('scaled_train.csv', index=False)
-
-
+all_data.to_csv('scaled_test.csv', index=False)
