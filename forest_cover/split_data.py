@@ -1,15 +1,23 @@
+import sys
 import pandas as pd
 import random as rd
 
-all_data = pd.read_table('scaled_data2.csv', sep=',', index_col=False)
+try:
+    input_path = sys.argv[1]
+    out_path1 = sys.argv[2]
+    out_path2 = sys.argv[3]
+    split_size = int(sys.argv[4])
+except IndexError:
+    print "Usage: split_data.py <input file> <output file1> <output file2> <size>"
+    quit()
 
-n = 1000
+all_data = pd.read_table(input_path, sep=',', index_col=False)
 
-valid_rows = rd.sample(all_data.index, n)
+valid_rows = rd.sample(all_data.index, split_size)
 
 valid_data = all_data.ix[valid_rows]
 train_data = all_data.drop(valid_rows)
 
-valid_data.to_csv('valid_dataset.csv', index=False)
-train_data.to_csv('train_dataset.csv', index=False)
+valid_data.to_csv(out_path1, index=False)
+train_data.to_csv(out_path2, index=False)
 

@@ -1,8 +1,16 @@
+import sys
 import pandas as pd
 import numpy as np
 from sklearn import preprocessing
 
-raw_data = pd.DataFrame.from_csv('test.csv')
+try:
+    input_path = sys.argv[1]
+    out_path = sys.argv[2]
+except IndexError:
+    print "Usage: normalise.py <input file> <output file>"
+    quit()
+
+raw_data = pd.DataFrame.from_csv(input_path)
 
 # re-scale the elevation to range -1..1
 elev_float = raw_data['Elevation'].values.astype(np.float64)
@@ -48,21 +56,27 @@ scaled_hillshade_9am = preprocessing.scale(hillshade_noon_float)
 hillshade_3pm_float = raw_data.Hillshade_3pm.values.astype(np.float64)
 scaled_hillshade_3pm = preprocessing.scale(hillshade_noon_float)
 
+if 'Cover_Type' in raw_data.columns:
+    dict = {'Cover_Type': raw_data.CoverType}
+else:
+    dict = {}
+
+dict.update({'Elevation' : scaled_elevation,
+             'Northern_Aspect' : northern_aspect,
+             'Eastern_Aspect' : eastern_aspect,
+             'Southern_Aspect' : southern_aspect,
+             'Western_Aspect' : western_aspect,
+             'Slope': scaled_slope,
+             'Distance_To_Hydrology': scaled_distance_to_hydrology,
+             'Horizontal_Distance_To_Hydrology': scaled_hdth, 
+             'Vertical_Distance_To_Hydrology': scaled_vdth,
+             'Horizontal_Distance_To_Fire_Points': scaled_hdtfp,
+             'Hillshade_9am': scaled_hillshade_9am,
+             'Hillshade_Noon': scaled_hillshade_noon,
+             'Hillshade_3pm': scaled_hillshade_3pm})
+
 # assemble into a data frame
-scaled_data = pd.DataFrame({
-                            'Elevation' : scaled_elevation,
-                            'Northern_Aspect' : northern_aspect,
-                            'Eastern_Aspect' : eastern_aspect,
-                            'Southern_Aspect' : southern_aspect,
-                            'Western_Aspect' : western_aspect,
-                            'Slope': scaled_slope,
-                            'Distance_To_Hydrology': scaled_distance_to_hydrology,
-                            'Horizontal_Distance_To_Hydrology': scaled_hdth, 
-                            'Vertical_Distance_To_Hydrology': scaled_vdth,
-                            'Horizontal_Distance_To_Fire_Points': scaled_hdtfp,
-                            'Hillshade_9am': scaled_hillshade_9am,
-                            'Hillshade_Noon': scaled_hillshade_noon,
-                            'Hillshade_3pm': scaled_hillshade_3pm})
+scaled_data = pd.DataFrame(dict)
 
 soil_cols = [u'Soil_Type' + unicode(n) for n in range(1, 41)]
 wilderness_cols = [u'Wilderness_Area' + unicode(n) for n in range(1,5)]
@@ -70,4 +84,4 @@ soil_cols.extend(wilderness_cols)
 missing_data = pd.DataFrame(raw_data, columns=soil_cols)
 
 all_data = scaled_data.merge(missing_data, how='inner', left_index=True, right_index=True)
-all_data.to_csv('scaled_test.csv', index=False)
+all_data.to_csv(out_path, index=False)

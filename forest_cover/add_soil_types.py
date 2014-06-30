@@ -1,3 +1,4 @@
+import sys
 import pandas as pd
 from nltk.corpus import stopwords
 from sklearn.feature_extraction.text import CountVectorizer
@@ -10,9 +11,16 @@ def get_soil_type(x):
 def get_tokens_for_soil_type(x, token_data):
     return token_data[x['Soil_Type']]
 
+try:
+    input_path = sys.argv[1]
+    out_path = sys.argv[2]
+except IndexError:
+    print "Usage: add_soil_types.py <input file> <output file>"
+    quit()
+
 soil_types = pd.DataFrame.from_csv('soil_types.csv', sep='\t')
 
-data = pd.read_table('scaled_test.csv', sep=',', index_col=False)
+data = pd.read_table(input_path, sep=',', index_col=False)
 
 types = soil_types['SoilType']
 type_values = types.to_dict().values()
@@ -29,4 +37,4 @@ data = data.merge(token_data, how='inner', left_on='Soil_Type', right_index=True
 data = data.drop('Soil_Type', 1)
 
 print data.shape
-data.to_csv('scaled_test2.csv', index=False)
+data.to_csv(out_path, index=False)
