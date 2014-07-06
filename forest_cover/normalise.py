@@ -57,7 +57,7 @@ hillshade_3pm_float = raw_data.Hillshade_3pm.values.astype(np.float64)
 scaled_hillshade_3pm = preprocessing.scale(hillshade_noon_float)
 
 if 'Cover_Type' in raw_data.columns:
-    dict = {'Cover_Type': raw_data.CoverType}
+    dict = {'Cover_Type': raw_data.Cover_Type}
 else:
     dict = {}
 

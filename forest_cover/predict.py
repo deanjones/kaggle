@@ -25,7 +25,7 @@ except Exception, e:
 #dataset = dataset.get_test_set()
 
 # or maybe specify test in yaml
-dataset = CSVDataset(path = test_path, one_hot = True)
+dataset = CSVDataset(path = test_path, one_hot = True, expect_labels=False)
 
 # use smallish batches to avoid running out of memory
 batch_size = 100
@@ -62,11 +62,8 @@ assert y.shape[0] == dataset.X.shape[0]
 # discard any zero-padding that was used to give the batches uniform size
 y = y[:m]
 
-class_mapping = { 0: -1, 1: 1 }
-
 out = open(out_path, 'w')
 for i in xrange(y.shape[0]):
 	p = y[i]
-	p = class_mapping[p]
 	out.write( '%d\n' % ( p ))
 out.close()
