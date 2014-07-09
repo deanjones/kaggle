@@ -29,6 +29,10 @@
    'valid': !obj:pylearn2.datasets.csv_dataset.CSVDataset {
      path: '/home/dean/git/kaggle/forest_cover/valid_dataset.csv',
      one_hot: 1
+   },
+   'test': !obj:pylearn2.datasets.csv_dataset.CSVDataset {
+     path: '/home/dean/git/kaggle/forest_cover/test_dataset.csv',
+     one_hot: 1
    }
   },
   learning_rule: !obj:pylearn2.training_algorithms.learning_rule.Momentum {
