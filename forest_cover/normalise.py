@@ -79,6 +79,7 @@ items.extend([('Elevation', scaled_elevation),
 
 # assemble into a data frame
 scaled_data = pd.DataFrame.from_items(items)
+scaled_data = scaled_data.set_index(raw_data.index)
 soil_cols = [u'Soil_Type' + unicode(n) for n in range(1, 41)]
 wilderness_cols = [u'Wilderness_Area' + unicode(n) for n in range(1,5)]
 soil_cols.extend(wilderness_cols)
