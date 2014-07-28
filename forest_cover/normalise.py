@@ -19,24 +19,15 @@ scaled_elevation = preprocessing.scale(elev_float)
 aspect_float = raw_data['Aspect'].values.astype(np.float64)
 scaled_aspect = preprocessing.scale(elev_float)
 
-northern_upper_limit = 45
-northern_lower_limit = 315
-southern_upper_limit = 225
-southern_lower_limit = 135
-eastern_upper_limit = 135
-eastern_lower_limit = 45
-western_upper_limit = 315
-western_lower_limit = 225
-
 # normalise the aspect to one-hot representation of E/N/W/S aspect
-northern_aspect_bool = (raw_data['Aspect'] < northern_upper_limit) | (raw_data['Aspect'] >= northern_lower_limit)
-northern_aspect = northern_aspect_bool.apply(lambda x: 1 if x==True else 0)
-eastern_aspect_bool = (raw_data['Aspect'] >= eastern_lower_limit) & (raw_data['Aspect'] < eastern_upper_limit)
-eastern_aspect = eastern_aspect_bool.apply(lambda x: 1 if x==True else 0)
-southern_aspect_bool = (raw_data['Aspect'] >= southern_lower_limit) & (raw_data['Aspect'] < southern_upper_limit)
-southern_aspect = southern_aspect_bool.apply(lambda x: 1 if x==True else 0)
-western_aspect_bool = (raw_data['Aspect'] >= western_lower_limit) & (raw_data['Aspect'] < western_upper_limit)
-western_aspect = western_aspect_bool.apply(lambda x: 1 if x==True else 0)
+northern_aspect_bool = (raw_data['Aspect'] < 90) | (raw_data['Aspect'] >= 270)
+northern_aspect = northern_aspect_bool.apply(lambda x: 1 if x==True else -1)
+southern_aspect_bool = (raw_data['Aspect'] >= 90) & (raw_data['Aspect'] < 270)
+southern_aspect = southern_aspect_bool.apply(lambda x: 1 if x==True else -1)
+western_aspect_bool = (raw_data['Aspect'] >= 180)
+western_aspect = western_aspect_bool.apply(lambda x: 1 if x==True else -1)
+eastern_aspect_bool = (raw_data['Aspect'] < 180)
+eastern_aspect = eastern_aspect_bool.apply(lambda x: 1 if x==True else -1)
 
 # normalise slope to range 0..1
 slope_float = raw_data['Slope'].values.astype(np.float64)
@@ -90,14 +81,19 @@ items.extend([('Elevation', scaled_elevation),
 scaled_data = pd.DataFrame.from_items(items)
 scaled_data = scaled_data.set_index(raw_data.index)
 
-# remove one column of each of the binary-coded columns
+# remove one column of each of the binary-coded features
 soil_cols = [u'Soil_Type' + unicode(n) for n in range(1, 40)]
 wilderness_cols = [u'Wilderness_Area' + unicode(n) for n in range(1, 4)]
 
 soil_cols.extend(wilderness_cols)
 
-missing_data = pd.DataFrame(raw_data, columns=soil_cols)
+binary_coded = pd.DataFrame(raw_data, columns=soil_cols)
 
-all_data = scaled_data.merge(missing_data, how='inner', left_index=True, right_index=True)
+# standard the binary-coded features to (1, -1)
+binary_coded.replace(to_replace=0, value=-1, inplace=True)
+
+all_data = scaled_data.merge(binary_coded, how='inner', left_index=True, right_index=True)
+
+print all_data.shape
 
 all_data.to_csv(out_path, index=False)

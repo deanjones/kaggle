@@ -7,19 +7,15 @@
   layers: [ 
    !obj:pylearn2.models.mlp.RectifiedLinear {
     layer_name: 'h0',
-    dim: 500,
-    sparse_init: 15
-   }, !obj:pylearn2.models.mlp.RectifiedLinear {
-    layer_name: 'h1',
-    dim: 500,
+    dim: 1200,
     sparse_init: 15
    }, !obj:pylearn2.models.mlp.Softmax {
     layer_name: 'y',
     n_classes: 7,
-    irange: 0.
+    irange: 0.05
    }
   ],
-  nvis: 54
+  nvis: 55
  },
  algorithm : !obj:pylearn2.training_algorithms.sgd.SGD {
   batch_size: 100,
@@ -38,9 +34,13 @@
   cost : !obj:pylearn2.costs.cost.SumOfCosts { costs : [
     !obj:pylearn2.costs.mlp.Default {
     }, !obj:pylearn2.costs.mlp.WeightDecay {
-      coeffs: [ .00005, .00005, .00005 ]
+      coeffs: [ .00005, .00005 ]
     }
   ]},
+#  cost: !obj:pylearn2.costs.mlp.dropout.Dropout {
+#    default_input_include_prob : .8 ,
+#    default_input_scale: 1.,
+#  },
   learning_rule: !obj:pylearn2.training_algorithms.learning_rule.Momentum {
    init_momentum : .5
   },
