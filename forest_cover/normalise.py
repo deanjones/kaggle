@@ -19,14 +19,23 @@ scaled_elevation = preprocessing.scale(elev_float)
 aspect_float = raw_data['Aspect'].values.astype(np.float64)
 scaled_aspect = preprocessing.scale(elev_float)
 
+northern_upper_limit = 45
+northern_lower_limit = 315
+southern_upper_limit = 225
+southern_lower_limit = 135
+eastern_upper_limit = 135
+eastern_lower_limit = 45
+western_upper_limit = 315
+western_lower_limit = 225
+
 # normalise the aspect to one-hot representation of E/N/W/S aspect
-northern_aspect_bool = (raw_data['Aspect'] < 45) | (raw_data['Aspect'] >= 315)
+northern_aspect_bool = (raw_data['Aspect'] < northern_upper_limit) | (raw_data['Aspect'] >= northern_lower_limit)
 northern_aspect = northern_aspect_bool.apply(lambda x: 1 if x==True else 0)
-eastern_aspect_bool = (raw_data['Aspect'] >= 45) & (raw_data['Aspect'] < 135)
+eastern_aspect_bool = (raw_data['Aspect'] >= eastern_lower_limit) & (raw_data['Aspect'] < eastern_upper_limit)
 eastern_aspect = eastern_aspect_bool.apply(lambda x: 1 if x==True else 0)
-southern_aspect_bool = (raw_data['Aspect'] >= 135) & (raw_data['Aspect'] < 225)
+southern_aspect_bool = (raw_data['Aspect'] >= southern_lower_limit) & (raw_data['Aspect'] < southern_upper_limit)
 southern_aspect = southern_aspect_bool.apply(lambda x: 1 if x==True else 0)
-western_aspect_bool = (raw_data['Aspect'] >= 225) & (raw_data['Aspect'] < 315)
+western_aspect_bool = (raw_data['Aspect'] >= western_lower_limit) & (raw_data['Aspect'] < western_upper_limit)
 western_aspect = western_aspect_bool.apply(lambda x: 1 if x==True else 0)
 
 # normalise slope to range 0..1
@@ -72,17 +81,21 @@ items.extend([('Elevation', scaled_elevation),
              ('Horizontal_Distance_To_Hydrology', scaled_hdth),
              ('Vertical_Distance_To_Hydrology', scaled_vdth),
              ('Horizontal_Distance_To_Roadways', scaled_hdtr),
-#             ('Hillshade_9am', scaled_hillshade_9am),
-#             ('Hillshade_Noon', scaled_hillshade_noon),
-#             ('Hillshade_3pm', scaled_hillshade_3pm),
+             ('Hillshade_9am', scaled_hillshade_9am),
+             ('Hillshade_Noon', scaled_hillshade_noon),
+             ('Hillshade_3pm', scaled_hillshade_3pm),
              ('Horizontal_Distance_To_Fire_Points', scaled_hdtfp)])
 
 # assemble into a data frame
 scaled_data = pd.DataFrame.from_items(items)
 scaled_data = scaled_data.set_index(raw_data.index)
-soil_cols = [u'Soil_Type' + unicode(n) for n in range(1, 41)]
-wilderness_cols = [u'Wilderness_Area' + unicode(n) for n in range(1,5)]
+
+# remove one column of each of the binary-coded columns
+soil_cols = [u'Soil_Type' + unicode(n) for n in range(1, 40)]
+wilderness_cols = [u'Wilderness_Area' + unicode(n) for n in range(1, 4)]
+
 soil_cols.extend(wilderness_cols)
+
 missing_data = pd.DataFrame(raw_data, columns=soil_cols)
 
 all_data = scaled_data.merge(missing_data, how='inner', left_index=True, right_index=True)
