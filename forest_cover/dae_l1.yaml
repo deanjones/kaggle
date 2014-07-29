@@ -5,7 +5,7 @@
  },
  model: !obj:pylearn2.models.autoencoder.DenoisingAutoencoder {
   nvis : 55,
-  nhid : 30,
+  nhid : 20,
   irange : 0.05,
   corruptor: !obj:pylearn2.corruption.BinomialCorruptor {
     corruption_level: .2,
@@ -20,7 +20,7 @@
   monitoring_dataset : *train,
   cost : !obj:pylearn2.costs.autoencoder.MeanSquaredReconstructionError {},
   termination_criterion : !obj:pylearn2.termination_criteria.EpochCounter {
-   max_epochs: 10,
+   max_epochs: 50,
   },
  },
  save_path: "./dae_l1.pkl",
