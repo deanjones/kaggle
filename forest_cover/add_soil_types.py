@@ -5,7 +5,7 @@ from sklearn.feature_extraction.text import CountVectorizer
 
 def get_soil_type(x):
     for n in range(1,41):
-        if x['Soil_Type' + str(n)]==1:
+        if x['Soil_Type' + str(n)]==0.9:
             return n
 
 def get_tokens_for_soil_type(x, token_data):
@@ -29,6 +29,9 @@ stopwords = stopwords.words('english')
 vectorizer = CountVectorizer(min_df=1, stop_words=stopwords)
 fit = vectorizer.fit_transform(type_values)
 token_data = pd.DataFrame.from_records(fit.toarray(), columns=vectorizer.get_feature_names(), index=range(1,41))
+
+token_data.replace(to_replace=0, value=0.1, inplace=True)
+token_data.replace(to_replace=1, value=0.9, inplace=True)
 
 data['Soil_Type'] = data.apply(lambda x: get_soil_type(x), axis = 1)
 

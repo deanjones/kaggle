@@ -7,8 +7,8 @@
    transformer: !pkl: "./dae_l2.pkl"
   },
   model: !obj:pylearn2.models.autoencoder.DenoisingAutoencoder {
-  nvis : 32,
-  nhid : 20,
+  nvis : 20,
+  nhid : 32,
   irange : 0.05,
   corruptor: !obj:pylearn2.corruption.BinomialCorruptor {
    corruption_level: .2,

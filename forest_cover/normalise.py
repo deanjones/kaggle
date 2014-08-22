@@ -3,97 +3,83 @@ import pandas as pd
 import numpy as np
 from sklearn import preprocessing
 
+def scale(unscaled_training_data, unscaled_test_data):
+    scaler = preprocessing.MinMaxScaler()
+    scaled_training_data = scaler.fit_transform(unscaled_training_data)
+    scaled_test_data = scaler.transform(unscaled_test_data)
+    return scaled_training_data, scaled_test_data
+
+def encode_categorical_data(raw_data):
+    cat_1 = 0.9
+    cat_0 = 0.1
+    # make sure we remove one column of each of the binary-coded features
+    soil_cols = [u'Soil_Type' + unicode(n) for n in range(1, 40)]
+    wilderness_cols = [u'Wilderness_Area' + unicode(n) for n in range(1, 4)]
+    soil_cols.extend(wilderness_cols)
+    binary_coded = pd.DataFrame(raw_data, columns=soil_cols)
+    # standardise the binary-coded features
+    binary_coded.replace(to_replace=0, value=cat_0, inplace=True)
+    binary_coded.replace(to_replace=1, value=cat_1, inplace=True)
+    return binary_coded
+
 try:
-    input_path = sys.argv[1]
-    out_path = sys.argv[2]
+    training_data_path = sys.argv[1]
+    test_data_path = sys.argv[2]
 except IndexError:
-    print "Usage: normalise.py <input file> <output file>"
+    print "Usage: normalise.py <training data> <test data>"
     quit()
 
-raw_data = pd.DataFrame.from_csv(input_path)
+raw_training_data = pd.DataFrame.from_csv(training_data_path)
+raw_test_data = pd.DataFrame.from_csv(test_data_path)
 
-# re-scale the elevation to range -1..1
-elev_float = raw_data['Elevation'].values.astype(np.float64)
-scaled_elevation = preprocessing.scale(elev_float)
+columns_to_scale = ['Elevation', 
+                    'Aspect', 
+                    'Slope', 
+                    'Horizontal_Distance_To_Hydrology', 
+                    'Vertical_Distance_To_Hydrology', 
+                    'Horizontal_Distance_To_Roadways', 
+                    'Hillshade_9am', 
+                    'Hillshade_Noon', 
+                    'Hillshade_3pm', 
+                    'Horizontal_Distance_To_Fire_Points']
 
-aspect_float = raw_data['Aspect'].values.astype(np.float64)
-scaled_aspect = preprocessing.scale(elev_float)
+training_data_to_scale = pd.DataFrame(raw_training_data, columns=columns_to_scale).astype(np.float64)
+test_data_to_scale = pd.DataFrame(raw_test_data, columns=columns_to_scale).astype(np.float64)
+
+scaled_training_data, scaled_test_data = scale(training_data_to_scale, test_data_to_scale)
+
+scaled_training_data = pd.DataFrame(scaled_training_data, columns=columns_to_scale)
+scaled_training_data = scaled_training_data.set_index(raw_training_data.index)
+
+scaled_test_data = pd.DataFrame(scaled_test_data, columns=columns_to_scale)
+scaled_test_data = scaled_test_data.set_index(raw_test_data.index)
+
+binary_coded_training_data = encode_categorical_data(raw_training_data)
+binary_coded_test_data = encode_categorical_data(raw_test_data)
+
+# shift the cover_type to 0..6
+shifted_cover_type = raw_training_data.Cover_Type - 1
+scaled_training_data.insert(loc=0, column='Cover_Type', value=shifted_cover_type)
+scaled_training_data['Cover_Type'] = scaled_training_data['Cover_Type'].astype(np.int32)
+
+# merge the numerical and categorical data into a single data frame
+all_training_data = scaled_training_data.merge(binary_coded_training_data, how='inner', left_index=True, right_index=True)
+
+all_test_data = scaled_test_data.merge(binary_coded_test_data, how='inner', left_index=True, right_index=True)
+
+print all_training_data.shape
+
+all_training_data.to_csv('training_normalised.csv', index=False)
+all_test_data.to_csv('test_normalised.csv', index=False)
+
 
 # normalise the aspect to one-hot representation of E/N/W/S aspect
-northern_aspect_bool = (raw_data['Aspect'] < 90) | (raw_data['Aspect'] >= 270)
-northern_aspect = northern_aspect_bool.apply(lambda x: 1 if x==True else -1)
-southern_aspect_bool = (raw_data['Aspect'] >= 90) & (raw_data['Aspect'] < 270)
-southern_aspect = southern_aspect_bool.apply(lambda x: 1 if x==True else -1)
-western_aspect_bool = (raw_data['Aspect'] >= 180)
-western_aspect = western_aspect_bool.apply(lambda x: 1 if x==True else -1)
-eastern_aspect_bool = (raw_data['Aspect'] < 180)
-eastern_aspect = eastern_aspect_bool.apply(lambda x: 1 if x==True else -1)
+#northern_aspect_bool = (raw_data['Aspect'] < 90) | (raw_data['Aspect'] >= 270)
+#northern_aspect = northern_aspect_bool.apply(lambda x: cat_1 if x==True else cat_0)
+#southern_aspect_bool = (raw_data['Aspect'] >= 90) & (raw_data['Aspect'] < 270)
+#southern_aspect = southern_aspect_bool.apply(lambda x: cat_1 if x==True else cat_0)
+#western_aspect_bool = (raw_data['Aspect'] >= 180)
+#western_aspect = western_aspect_bool.apply(lambda x: cat_1 if x==True else cat_0)
+#eastern_aspect_bool = (raw_data['Aspect'] < 180)
+#eastern_aspect = eastern_aspect_bool.apply(lambda x: cat_1 if x==True else cat_0)
 
-# normalise slope to range 0..1
-slope_float = raw_data['Slope'].values.astype(np.float64)
-scaled_slope = preprocessing.scale(slope_float)
-
-# normalise horizontal distance / vertical distance to hydrology 
-# to distance to hydrology in range 0..1
-
-hdth_float = raw_data['Horizontal_Distance_To_Hydrology'].values.astype(np.float64)
-scaled_hdth = preprocessing.scale(hdth_float)
-
-vdth_float = raw_data['Vertical_Distance_To_Hydrology'].values.astype(np.float64)
-scaled_vdth = preprocessing.scale(vdth_float)
-
-hdtr_float = raw_data['Horizontal_Distance_To_Roadways'].values.astype(np.float64)
-scaled_hdtr = preprocessing.scale(hdtr_float)
-
-hdtfp_float = raw_data['Horizontal_Distance_To_Fire_Points'].values.astype(np.float64)
-scaled_hdtfp = preprocessing.scale(hdtr_float)
-
-hillshade_noon_float = raw_data.Hillshade_Noon.values.astype(np.float64)
-scaled_hillshade_noon = preprocessing.scale(hillshade_noon_float)
-
-hillshade_9am_float = raw_data.Hillshade_9am.values.astype(np.float64)
-scaled_hillshade_9am = preprocessing.scale(hillshade_noon_float)
-
-hillshade_3pm_float = raw_data.Hillshade_3pm.values.astype(np.float64)
-scaled_hillshade_3pm = preprocessing.scale(hillshade_noon_float)
-
-if 'Cover_Type' in raw_data.columns:
-    items = [('Cover_Type', raw_data.Cover_Type)]
-else:
-    items = []
-
-items.extend([('Elevation', scaled_elevation),
-#              ('Aspect', scaled_aspect),
-             ('Northern_Aspect', northern_aspect),
-             ('Eastern_Aspect', eastern_aspect),
-             ('Southern_Aspect', southern_aspect),
-             ('Western_Aspect', western_aspect),
-             ('Slope', scaled_slope),
-             ('Horizontal_Distance_To_Hydrology', scaled_hdth),
-             ('Vertical_Distance_To_Hydrology', scaled_vdth),
-             ('Horizontal_Distance_To_Roadways', scaled_hdtr),
-             ('Hillshade_9am', scaled_hillshade_9am),
-             ('Hillshade_Noon', scaled_hillshade_noon),
-             ('Hillshade_3pm', scaled_hillshade_3pm),
-             ('Horizontal_Distance_To_Fire_Points', scaled_hdtfp)])
-
-# assemble into a data frame
-scaled_data = pd.DataFrame.from_items(items)
-scaled_data = scaled_data.set_index(raw_data.index)
-
-# remove one column of each of the binary-coded features
-soil_cols = [u'Soil_Type' + unicode(n) for n in range(1, 40)]
-wilderness_cols = [u'Wilderness_Area' + unicode(n) for n in range(1, 4)]
-
-soil_cols.extend(wilderness_cols)
-
-binary_coded = pd.DataFrame(raw_data, columns=soil_cols)
-
-# standard the binary-coded features to (1, -1)
-binary_coded.replace(to_replace=0, value=-1, inplace=True)
-
-all_data = scaled_data.merge(binary_coded, how='inner', left_index=True, right_index=True)
-
-print all_data.shape
-
-all_data.to_csv(out_path, index=False)

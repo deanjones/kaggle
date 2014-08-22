@@ -15,10 +15,12 @@ except IndexError:
 all_data = pd.read_table(input_path, sep=',', index_col=False)
 
 test_and_valid_rows = rd.sample(all_data.index, split_size * 2)
+#valid_rows = rd.sample(all_data.index, split_size)
 
 valid_data = all_data.ix[test_and_valid_rows[0:split_size]]
 test_data = all_data.ix[test_and_valid_rows[split_size:split_size*2]]
 train_data = all_data.drop(test_and_valid_rows)
+#train_data = all_data.drop(valid_rows)
 
 valid_data.to_csv(valid_path, index=False)
 test_data.to_csv(test_path, index=False)

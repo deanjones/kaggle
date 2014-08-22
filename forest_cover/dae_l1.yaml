@@ -5,7 +5,7 @@
  },
  model: !obj:pylearn2.models.autoencoder.DenoisingAutoencoder {
   nvis : 55,
-  nhid : 20,
+  nhid : 44,
   irange : 0.05,
   corruptor: !obj:pylearn2.corruption.BinomialCorruptor {
     corruption_level: .2,
