@@ -23,7 +23,7 @@
   monitoring_dataset : *train,
   cost : !obj:pylearn2.costs.autoencoder.MeanSquaredReconstructionError {},
   termination_criterion : !obj:pylearn2.termination_criteria.EpochCounter {
-   max_epochs: 50,
+   max_epochs: 200,
   },
  },
  save_path: "./dae_l2.pkl",

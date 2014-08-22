@@ -2,6 +2,7 @@ import sys
 import pandas as pd
 import numpy as np
 from sklearn import preprocessing
+from add_soil_types import add_soil_types
 
 def scale(unscaled_training_data, unscaled_test_data):
     scaler = preprocessing.MinMaxScaler()
@@ -71,7 +72,6 @@ print all_training_data.shape
 
 all_training_data.to_csv('training_normalised.csv', index=False)
 all_test_data.to_csv('test_normalised.csv', index=False)
-
 
 # normalise the aspect to one-hot representation of E/N/W/S aspect
 #northern_aspect_bool = (raw_data['Aspect'] < 90) | (raw_data['Aspect'] >= 270)
