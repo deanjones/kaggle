@@ -1,0 +1,31 @@
+!obj:pylearn2.train.Train {
+  dataset: &train !obj:pylearn2.datasets.transformer_dataset.TransformerDataset {
+   raw: !obj:pylearn2.datasets.csv_dataset.CSVDataset {
+    path: '/home/dean/git/kaggle/forest_cover/train_mlp.csv',
+    one_hot: 1
+   },
+   transformer: !pkl: "./dae_l2.pkl"
+  },
+  model: !obj:pylearn2.models.autoencoder.DenoisingAutoencoder {
+  nvis : 20,
+  nhid : 32,
+  irange : 0.05,
+  corruptor: !obj:pylearn2.corruption.BinomialCorruptor {
+   corruption_level: .2,
+  },
+  act_enc: "tanh",
+  act_dec: null,    # Linear activation on the decoder side.
+ },
+ algorithm: !obj:pylearn2.training_algorithms.sgd.SGD {
+  learning_rate : 1e-3,
+  batch_size : 100,
+  monitoring_batches : 5,
+  monitoring_dataset : *train,
+  cost : !obj:pylearn2.costs.autoencoder.MeanSquaredReconstructionError {},
+  termination_criterion : !obj:pylearn2.termination_criteria.EpochCounter {
+   max_epochs: 50,
+  },
+ },
+ save_path: "./dae_l3.pkl",
+ save_freq: 1
+}
